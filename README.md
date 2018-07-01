@@ -6,6 +6,8 @@ A Vim plugin which provides ways of navigating JSON document buffers.
 * `:JsonPath path.to.prop`:
   Searches the active buffer for the given path, placing the cursor on it if found.
 
+More information is available via `:help jsonpath`.
+
 ## Mappings
 
 Mappings are not provided by default but can easily be added to your `.vimrc`.
