@@ -172,10 +172,12 @@ function! jsonpath#goto(...)
     let search_for = input('Path (using dot notation): ')
   endif
 
+  echo 'Searching buffer...' | redraw
+
   let pos = jsonpath#parse_buffer(search_for)
 
   if !empty(pos)
-    call setpos(pos)
+    call setpos('.', pos)
   else
     echo 'Path not found: ' . search_for
   endif
@@ -185,6 +187,7 @@ endfunction
 
 " Echoes the path of the identifier under the cursor
 function! jsonpath#echo()
+  echo 'Parsing buffer...' | redraw
   let path = jsonpath#parse_buffer([], line('.'), col('.'))
   echo len(path) ? 'Path: ' . join(path, g:jsonpath_delimeter) : 'Empty path'
 
@@ -192,10 +195,10 @@ function! jsonpath#echo()
 endfunction
 
 function! jsonpath#command(input)
-  if empty(input)
+  if empty(a:input)
     return jsonpath#echo()
   else
-    return jsonpath#goto(input)
+    return jsonpath#goto(a:input)
   endif
 endfunction
 
