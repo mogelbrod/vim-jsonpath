@@ -15,6 +15,25 @@ let s:escapes = {
   \ '"': "\"",
   \ '\': "\\"}
 
+" Returns true iff the lists A and B are equal after converting all items to strings
+" The VimScript built-in == operator can't be used since it does strict comparisons
+function s:is_equal_lists(a, b)
+  let length = len(a:a)
+  if length != len(a:b)
+    return 0
+  endif
+
+  let i = 0
+  while i < length
+    if a:a[i] != a:b[i]
+      return 0
+    endif
+    let i += 1
+  endwhile
+
+  return 1
+endfunction
+
 " Parses the current VIM buffer up until a certain offset/end of file
 " while keeping track of the current JSON path (using the `stack` list).
 " Can optionally look for the path `search_for` on the way, stopping when found.
@@ -110,7 +129,7 @@ function! jsonpath#parse_buffer(search_for, ...)
                 \})
           
           " Check if the sought search_for path has been reached?
-          if stack_modified == 1 && is_searching && stack == search_for
+          if stack_modified == 1 && is_searching && s:is_equal_lists(stack, search_for)
             return [bufnr('%'), lnr, cnr, 0]
           endif
         endif
