@@ -58,7 +58,7 @@ COMMANDS                                                   *jsonpath-commands*
 
 |:JsonPath| [<search-path>]                                        *:JsonPath*
     If <search-path> is provided: |jsonpath-goto|
-        Searches the active buffer for the definition for the given path,
+        Scans the active buffer for the definition for the given path,
         placing the cursor on it if found.
     If omitted: |jsonpath-echo|
         Outputs the path to the identifier under the cursor using |:echo|.

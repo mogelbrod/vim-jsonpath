@@ -37,7 +37,7 @@ endfunction
 " Parses the current VIM buffer up until a certain offset/end of file
 " while keeping track of the current JSON path (using the `stack` list).
 " Can optionally look for the path `search_for` on the way, stopping when found.
-function! jsonpath#parse_buffer(search_for, ...)
+function! jsonpath#scan_buffer(search_for, ...)
   " Parse arguments
   let search_for = a:search_for
   if type(search_for) == v:t_string
@@ -193,7 +193,7 @@ function! jsonpath#goto(...)
 
   echo 'Searching buffer...' | redraw
 
-  let pos = jsonpath#parse_buffer(search_for)
+  let pos = jsonpath#scan_buffer(search_for)
 
   if !empty(pos)
     call setpos('.', pos)
@@ -207,7 +207,7 @@ endfunction
 " Echoes the path of the identifier under the cursor
 function! jsonpath#echo()
   echo 'Parsing buffer...' | redraw
-  let path = jsonpath#parse_buffer([], line('.'), col('.'))
+  let path = jsonpath#scan_buffer([], line('.'), col('.'))
   echo len(path) ? 'Path: ' . join(path, g:jsonpath_delimeter) : 'Empty path'
 
   return ''
