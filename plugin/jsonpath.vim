@@ -7,7 +7,7 @@ endif
 let g:loaded_jsonpath = 1
 
 if !exists('g:jsonpath_delimeter')
-    let g:jsonpath_delimeter = '.'
+  let g:jsonpath_delimeter = '.'
 endif
 
 command! -nargs=? JsonPath call jsonpath#command(<q-args>)
