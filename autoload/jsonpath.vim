@@ -17,7 +17,7 @@ let s:escapes = {
 
 " Returns true iff the lists A and B are equal after converting all items to strings
 " The VimScript built-in == operator can't be used since it does strict comparisons
-function s:is_equal_lists(a, b)
+function s:is_equal_lists(a, b) "{{{
   let length = len(a:a)
   if length != len(a:b)
     return 0
@@ -32,12 +32,12 @@ function s:is_equal_lists(a, b)
   endwhile
 
   return 1
-endfunction
+endfunction "}}}
 
 " Parses the current VIM buffer up until a certain offset/end of file
 " while keeping track of the current JSON path (using the `stack` list).
 " Can optionally look for the path `search_for` on the way, stopping when found.
-function! jsonpath#scan_buffer(search_for, ...)
+function! jsonpath#scan_buffer(search_for, ...) "{{{
   " Parse arguments
   let search_for = a:search_for
   if type(search_for) == v:t_string
@@ -63,12 +63,12 @@ function! jsonpath#scan_buffer(search_for, ...)
 
   try
     let lnr = 1
-    while lnr <= to_line
+    while lnr <= to_line "{{{
       let line = getline(lnr)
       let line_length = len(line)
       let cnr = 1
 
-      while cnr <= line_length
+      while cnr <= line_length "{{{
         let char = line[cnr - 1]
         let stack_modified = 0
 
@@ -141,14 +141,14 @@ function! jsonpath#scan_buffer(search_for, ...)
         endif
 
         let cnr += 1
-      endwhile " end of column loop
+      endwhile "}}}
 
       if finished
         break
       endif
 
       let lnr += 1
-    endwhile " end of line loop
+    endwhile "}}}
 
     " Reached desired position in cursor mode
     if finished
@@ -165,7 +165,7 @@ function! jsonpath#scan_buffer(search_for, ...)
       return stack
     endif
 
-  " Uncomment these lines to enable debugging:
+  " Uncomment these lines to enable debugging {{{
 
   " catch
     " call add(actions, {
@@ -178,14 +178,15 @@ function! jsonpath#scan_buffer(search_for, ...)
     " call setqflist(actions, 'r')
     " copen
 
+  "}}}
   endtry
 
   " Failure
   return []
-endfunction
+endfunction "}}}
 
 " Attempts to place the cursor on identifier for the given path
-function! jsonpath#goto(...)
+function! jsonpath#goto(...) "{{{
   let search_for = get(a:, 1)
   if empty(search_for)
     let search_for = input('Path (using dot notation): ')
@@ -202,23 +203,24 @@ function! jsonpath#goto(...)
   endif
 
   return ''
-endfunction
+endfunction "}}}
 
 " Echoes the path of the identifier under the cursor
-function! jsonpath#echo()
+function! jsonpath#echo() "{{{
   echo 'Parsing buffer...' | redraw
   let path = jsonpath#scan_buffer([], line('.'), col('.'))
   echo len(path) ? 'Path: ' . join(path, g:jsonpath_delimeter) : 'Empty path'
 
   return ''
-endfunction
+endfunction "}}}
 
-function! jsonpath#command(input)
+" Entry point for the :JsonPath command
+function! jsonpath#command(input) "{{{
   if empty(a:input)
     return jsonpath#echo()
   else
     return jsonpath#goto(a:input)
   endif
-endfunction
+endfunction "}}}
 
 " vim:set et sw=2:
