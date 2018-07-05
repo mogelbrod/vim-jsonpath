@@ -84,8 +84,8 @@ MAPPINGS                                                   *jsonpath-mappings*
 This plugin currently doesn't provide any mappings by default.
 The following mappings are recommended starting points:
 >
-  au FileType json noremap <buffer> <silent> <expr> <leader>g jsonpath#goto()
-  au FileType json noremap <buffer> <silent> <expr> <leader>p jsonpath#echo()
+    au FileType json noremap <buffer> <silent> <expr> <leader>g jsonpath#goto()
+    au FileType json noremap <buffer> <silent> <expr> <leader>p jsonpath#echo()
 <
 
 ==============================================================================
@@ -96,4 +96,4 @@ Releases and bug reports are posted on GitHub:
 http://github.com/mogelbrod/vim-jsonpath
 
 
- vim:tw=78:et:ft=help:norl:
+ vim:tw=78:sw=4:et:ft=help:norl:
