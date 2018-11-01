@@ -41,7 +41,7 @@ function! jsonpath#scan_buffer(search_for, ...) "{{{
   " Parse arguments
   let search_for = a:search_for
   if type(search_for) == v:t_string
-    let search_for = split(search_for, '\.', 1)
+    let search_for = split(search_for, escape(g:jsonpath_delimeter, '.\'), 1)
   endif
   let is_searching = !empty(search_for)
 
