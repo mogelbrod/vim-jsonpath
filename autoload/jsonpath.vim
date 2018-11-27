@@ -190,19 +190,20 @@ function! jsonpath#goto(...) "{{{
   let search_for = get(a:, 1)
   if empty(search_for)
     let search_for = input('Path (using dot notation): ')
+    if empty(search_for)
+      echo 'Search aborted'
+      return
+    endif
   endif
-
-  echo 'Searching buffer...' | redraw
 
   let pos = jsonpath#scan_buffer(search_for)
 
-  if !empty(pos)
-    call setpos('.', pos)
-  else
+  if empty(pos)
     echo 'Path not found: ' . search_for
+  else
+    call setpos('.', pos)
+    echo 'Found on line ' . pos[1]
   endif
-
-  return ''
 endfunction "}}}
 
 " Echoes the path of the identifier under the cursor
@@ -210,16 +211,14 @@ function! jsonpath#echo() "{{{
   echo 'Parsing buffer...' | redraw
   let path = jsonpath#scan_buffer([], line('.'), col('.'))
   echo len(path) ? 'Path: ' . join(path, g:jsonpath_delimeter) : 'Empty path'
-
-  return ''
 endfunction "}}}
 
 " Entry point for the :JsonPath command
 function! jsonpath#command(input) "{{{
   if empty(a:input)
-    return jsonpath#echo()
+    jsonpath#echo()
   else
-    return jsonpath#goto(a:input)
+    jsonpath#goto(a:input)
   endif
 endfunction "}}}
 
