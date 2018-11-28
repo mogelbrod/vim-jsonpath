@@ -216,9 +216,9 @@ endfunction "}}}
 " Entry point for the :JsonPath command
 function! jsonpath#command(input) "{{{
   if empty(a:input)
-    jsonpath#echo()
+    call jsonpath#echo()
   else
-    jsonpath#goto(a:input)
+    call jsonpath#goto(a:input)
   endif
 endfunction "}}}
 
