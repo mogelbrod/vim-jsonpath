@@ -53,6 +53,16 @@ Override using >
     let g:jsonpath_delimeter = ':'
 <
 
+|g:jsonpath_register|                                    *g:jsonpath_register*
+Type: |string|
+Default: None
+
+If assigned to a valid register name (for example `*` or `+`) that register
+will be set to the path output whenever `jsonpath#echo()` is called.
+Set using >
+    let g:jsonpath_register = '*'
+<
+
 ==============================================================================
 COMMANDS                                                   *jsonpath-commands*
 
@@ -62,6 +72,7 @@ COMMANDS                                                   *jsonpath-commands*
         placing the cursor on it if found.
     If omitted: |jsonpath-echo|
         Outputs the path to the identifier under the cursor using |:echo|.
+        Also copies the path to a register if |g:jsonpath_register| is set.
 
 
 ==============================================================================
@@ -76,6 +87,7 @@ The plugin provides two functions that can be invoked using |:JsonPath| or via
 
 `jsonpath#echo()`                                              *jsonpath-echo*
     Outputs the path to the identifier under the cursor using |:echo|.
+    Also copies the path to a register if |g:jsonpath_register| is set.
 
 
 ==============================================================================

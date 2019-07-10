@@ -210,7 +210,15 @@ endfunction "}}}
 function! jsonpath#echo() "{{{
   echo 'Parsing buffer...' | redraw
   let path = jsonpath#scan_buffer([], line('.'), col('.'))
-  echo len(path) ? 'Path: ' . join(path, g:jsonpath_delimeter) : 'Empty path'
+  let joined = join(path, g:jsonpath_delimeter)
+  if len(path)
+    if exists('g:jsonpath_register')
+      call setreg(g:jsonpath_register, joined)
+    endif
+    echo 'Path: ' . joined
+  else
+    echo 'Empty path'
+  endif
 endfunction "}}}
 
 " Entry point for the :JsonPath command
