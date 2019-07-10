@@ -127,7 +127,7 @@ function! jsonpath#scan_buffer(search_for, ...) "{{{
                 \ 'col': cnr + 1,
                 \ 'text': char . ' = ' . (stack_modified > 0 ? 'push' : 'pop') . ' => ' . join(stack, g:jsonpath_delimeter)
                 \})
-          
+
           " Check if the sought search_for path has been reached?
           if stack_modified == 1 && is_searching && s:is_equal_lists(stack, search_for)
             return [bufnr('%'), lnr, cnr, 0]
@@ -211,6 +211,16 @@ function! jsonpath#echo() "{{{
   echo 'Parsing buffer...' | redraw
   let path = jsonpath#scan_buffer([], line('.'), col('.'))
   echo len(path) ? 'Path: ' . join(path, g:jsonpath_delimeter) : 'Empty path'
+endfunction "}}}
+
+function! jsonpath#copy() "{{{
+  echo 'Parsing buffer...' | redraw
+  let path = jsonpath#scan_buffer([], line('.'), col('.'))
+  let path_str = len(path) ? join(path, g:jsonpath_delimeter) : ''
+  if !empty(path_str)
+    let @* = path_str
+    echo 'Copied ' . path_str
+  endif
 endfunction "}}}
 
 " Entry point for the :JsonPath command
