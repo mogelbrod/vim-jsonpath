@@ -11,6 +11,12 @@ INTRODUCTION                                                        *jsonpath*
 
 This plugin provides ways of navigating JSON document buffers.
 
+While not required it is recommended to use a Vim environment with the
+|+python3| feature enabled, since the python implementation is much faster
+than the vimscript variant. You can check the availability using: >
+    :echo has("python3")
+<
+
                                                        *jsonpath-dot-notation*
 Paths should be entered (and will be output) using dot notation, consisting of
 properties separated by dots (configurable, see |g:jsonpath_delimeter|).
@@ -61,6 +67,17 @@ If assigned to a valid register name (for example `*` or `+`) that register
 will be set to the path output whenever `jsonpath#echo()` is called.
 Set using >
     let g:jsonpath_register = '*'
+<
+
+|g:jsonpath_use_python|                                *g:jsonpath_use_python*
+Type: |int|
+Default: `has('python3')`
+
+Set this value to `0` to prevent the plugin from using python to scan the
+buffer. This option should generally be left alone as the python
+implementation is much faster.
+Override using >
+    let g:jsonpath_use_python = 0
 <
 
 ==============================================================================

@@ -22,6 +22,16 @@ au FileType json noremap <buffer> <silent> <expr> <leader>p jsonpath#echo()
 au FileType json noremap <buffer> <silent> <expr> <leader>g jsonpath#goto()
 ```
 
+### Python support in vim
+
+While not required it is recommended to use a Vim environment with the
+`+python3` feature enabled, since the plugin provides a python implementation
+that is much faster than the vimscript variant. You can check the availability
+using:
+```vim
+:echo has("python3")
+```
+
 ## Mappings
 
 Mappings are not provided by default but can easily be added to your `.vimrc`.

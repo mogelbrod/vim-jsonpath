@@ -10,6 +10,10 @@ if !exists('g:jsonpath_delimeter')
   let g:jsonpath_delimeter = '.'
 endif
 
+if !exists('g:jsonpath_use_python')
+  let g:jsonpath_use_python = has('python3')
+endif
+
 command! -nargs=? JsonPath call jsonpath#command(<q-args>)
 
 " au FileType json noremap <buffer> <silent> <expr> <leader>g jsonpath#goto()

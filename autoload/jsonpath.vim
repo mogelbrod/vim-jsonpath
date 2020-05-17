@@ -1,10 +1,12 @@
 " autoload/jsonpath.vim
 " Author: Victor Hallberg <https://hallberg.cc>
 
-if exists("g:autoloaded_jsonpath")
+if exists('g:autoloaded_jsonpath')
   finish
 endif
 let g:autoloaded_jsonpath = 1
+
+let s:plugin_dir = expand('<sfile>:p:h:h')
 
 let s:escapes = {
   \ 'b': "\b",
@@ -45,12 +47,27 @@ function! jsonpath#scan_buffer(search_for, ...) "{{{
   endif
   let is_searching = !empty(search_for)
 
+  let to_column = max([0, get(a:, 2)])
+
   let to_line = get(a:, 1)
   if to_line < 1 || to_line > line('$')
     let to_line = line('$')
+    let to_column = strchars(getline('$'))
   endif
 
-  let to_column = max([0, get(a:, 2)])
+  if g:jsonpath_use_python
+    if has('python3')
+      return jsonpath#scan_buffer_python(search_for, to_line, to_column)
+    endif
+
+    echom 'g:jsonpath_use_python set but python not found, falling back to vimscript'
+  endif
+
+  return jsonpath#scan_buffer_vimscript(search_for, to_line, to_column)
+endfunction "}}}
+
+function! jsonpath#scan_buffer_vimscript(search_for, to_line, to_column) "{{{
+  let is_searching = !empty(a:search_for)
 
   " Parser state
   let stack = []
@@ -63,7 +80,7 @@ function! jsonpath#scan_buffer(search_for, ...) "{{{
 
   try
     let lnr = 1
-    while lnr <= to_line "{{{
+    while lnr <= a:to_line "{{{
       let line = getline(lnr)
       let line_length = len(line)
       let cnr = 1
@@ -129,13 +146,13 @@ function! jsonpath#scan_buffer(search_for, ...) "{{{
                 \})
           
           " Check if the sought search_for path has been reached?
-          if stack_modified == 1 && is_searching && s:is_equal_lists(stack, search_for)
+          if stack_modified == 1 && is_searching && s:is_equal_lists(stack, a:search_for)
             return [bufnr('%'), lnr, cnr, 0]
           endif
         endif
 
         " Abort if end position has been reached
-        if !parsing_key && lnr >= to_line && cnr + 1 >= to_column
+        if !parsing_key && lnr >= a:to_line && cnr + 1 >= a:to_column
           let finished = !is_searching " search failed if we reached end
           break
         endif
@@ -183,6 +200,32 @@ function! jsonpath#scan_buffer(search_for, ...) "{{{
 
   " Failure
   return []
+endfunction "}}}
+
+function! jsonpath#scan_buffer_python(search_for, to_line, to_column) "{{{
+py3 << EOF
+import sys
+import vim
+sys.path.insert(0, vim.eval('s:plugin_dir'))
+import jsonpath
+
+stream = jsonpath.CountingLines(vim.current.buffer)
+result = jsonpath.scan_stream(
+  stream,
+  path=vim.eval('a:search_for'),
+  line=int(vim.eval('a:to_line')),
+  column=int(vim.eval('a:to_column')),
+)
+EOF
+
+  let result = py3eval('result')
+  if empty(result)
+    return []
+  elseif !empty(a:search_for)
+    return [bufnr('%'), result[0], result[1], 0]
+  endif
+
+  return result
 endfunction "}}}
 
 " Attempts to place the cursor on identifier for the given path
