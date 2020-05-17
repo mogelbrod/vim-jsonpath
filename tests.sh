@@ -8,7 +8,8 @@ t() {
   expected="${@:$#}"
   args="${@:1:($#-1)}"
   echo -e "\n./jsonpath.py $args"
-  output=$(time -p ./jsonpath.py $args)
+  output=$(./jsonpath.py $args)
+  # output=$(time -p ./jsonpath.py $args)
   if [ "$output" = "$expected" ]; then
     echo -e "${GREEN}- pass${NC}"
   else
@@ -41,4 +42,4 @@ t tests/array.json "2.value" "4:26"
 t tests/array.json "3.numbers.0" "6:5"
 t tests/restcountries.json "219.capital" "17806:13"
 t tests/restcountries.json "85.latlng.0" "6963:4"
-t tests/unicode.json "👍" "1:34"
+t tests/unicode.json "👍" "1:35"
