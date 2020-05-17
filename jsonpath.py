@@ -1,38 +1,30 @@
 #!/usr/bin/env python3
 
 from __future__ import print_function
-import re
 import sys
+import re
 
-def main(args):
-    output = None
-    if args.line == True:
-        parts = re.split("[,.:/-]", args.target)
-        line = int(parts[0])
-        column = 1 if len(parts) == 1 else int(parts[1])
-        res = scan_file(args.file, line=line, column=column, verbose=args.verbose)
-        if res:
-            output = args.delimeter.join(str(x) for x in res)
-    else:
-        path = args.target.split(args.delimeter)
-        res = scan_file(args.file, path=path, verbose=args.verbose)
-        if res:
-            output = ":".join(str(x) for x in res)
-    if output:
-        print(output)
-    else:
-        print(f"'{args.target}' not found", file=sys.stderr)
-        sys.exit(2)
+# open() doesn't support encoding in python2, but codecs.open does
+if (sys.version_info < (3, 0)):
+    from codecs import open
 
+def scan_stream(stream, path=[], line=-1, column=-1, verbose=False):
+    """
+    Scans the given stream (CountingStream instance) for a given path, or
+    line/column offset.
 
-def scan_file(file, path=[], line=-1, column=-1, verbose=False):
+    If a path is specified the function will search for it, returning (line,
+    column) of where the value is declared if found.
+
+    If a positive line and column is provided the function will instead return
+    the path (as a list) at that offset.
+    """
     searching = len(path) > 0
 
     if not searching and (line < 0 or column < 0):
         raise ValueError("Must provide a non-empty 'path' or 'line' and 'column' >=0")
 
     # Parser state
-    stream = CountingStream(file)
     in_key = False
     quoted = False
     key = "" # using a string array seems to perform worse
@@ -48,7 +40,13 @@ def scan_file(file, path=[], line=-1, column=-1, verbose=False):
             break
 
         if verbose:
-            print(f"{stream.lnum}:{stream.cnum} {char}  quoted={quoted} in_key={in_key} key={key}")
+            print("%d:%d %c  quoted=%s in_key=%s key=%s",
+                stream.lnum,
+                stream.cnum,
+                char,
+                quoted,
+                in_key,
+                key)
 
         if char == "\\":
             decoded = read_escape(stream)
@@ -123,6 +121,9 @@ def scan_file(file, path=[], line=-1, column=-1, verbose=False):
 ESCAPE_MAP = {"n":"\n","t":"\t","r":"\r","b":"\b","f":"\f"}
 
 def read_escape(stream):
+    """
+    Reads a escape code from stream, returning the decoded character.
+    """
     char = stream.read()
     mapped = ESCAPE_MAP.get(char, None)
     if mapped is not None:
@@ -138,16 +139,20 @@ def read_escape(stream):
     return unichr(r)
 
 
-class CountingStream(object):
-    def __init__(self, file):
-        self.file = file
+class CountingStream:
+    """
+    Wraps a readable text stream accessible one character at a time.
+    Keeps track of current line (lnum) and column number (cnum).
+    """
+    def __init__(self):
         self.lnum = 1
-        self.cnum = 0
+        self.cnum = 1
+
+    def _read(self):
+        raise TypeError("Use a CountingStream subclass implementing _read()")
 
     def read(self, advance=True):
-        # TODO: Any way to optimize using something from this?
-        # https://stackoverflow.com/a/59013806/1527562
-        char = self.file.read(1)
+        char = self._read()
         if advance is True or (callable(advance) and advance(char)):
             if char == "\n":
                 self.lnum += 1
@@ -164,13 +169,71 @@ class CountingStream(object):
                 break
         return char
 
+
+class CountingLines(CountingStream):
+    """
+    CountingStream for streams accessible via line lists.
+    """
+    def __init__(self, lines):
+        CountingStream.__init__(self)
+        self.lines = lines
+        self.line_count = len(self.lines)
+
+    def _read(self):
+        if self.lnum >= self.line_count:
+            return ""
+        line = self.lines[self.lnum - 1]
+        if self.cnum > len(line):
+            return "\n"
+        return line[self.cnum - 1]
+
+
+class CountingFile(CountingStream):
+    """
+    CountingStream for file objects (returned via `open()`).
+    """
+    def __init__(self, file):
+        CountingStream.__init__(self)
+        self.file = file
+
+    def _read(self):
+        return self.file.read(1)
+
+
+def main(args):
+    """
+    Entrypoint for CLI usage.
+    """
+    file = sys.stdin
+    if args.file != "-":
+        file = open(args.file, "r", buffering=2048, encoding="utf-8")
+    stream = CountingFile(file)
+    output = None
+    if args.line == True:
+        parts = re.split("[,.:/-]", args.target)
+        line = int(parts[0])
+        column = 1 if len(parts) == 1 else int(parts[1])
+        res = scan_stream(stream, line=line, column=column, verbose=args.verbose)
+        if res:
+            output = args.delimeter.join(str(x) for x in res)
+    else:
+        path = args.target.split(args.delimeter)
+        res = scan_stream(stream, path=path, verbose=args.verbose)
+        if res:
+            output = ":".join(str(x) for x in res)
+    if output:
+        print(output)
+    else:
+        print("'%s' not found" % (args.target), file=sys.stderr)
+        sys.exit(2)
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
         "file",
-        type=argparse.FileType("r", 2048, "utf-8"),
         default="-",
         help="json to parse")
 
