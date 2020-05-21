@@ -198,7 +198,7 @@ class CountingLines(CountingStream):
         self.line_count = len(self.lines)
 
     def _read(self):
-        if self.lnum >= self.line_count:
+        if self.lnum > self.line_count:
             return ""
         line = self.lines[self.lnum - 1]
         if self.cnum > len(line):
