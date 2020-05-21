@@ -83,13 +83,14 @@ Override using >
 ==============================================================================
 COMMANDS                                                   *jsonpath-commands*
 
-|:JsonPath| [<search-path>]                                        *:JsonPath*
+[range]|:JsonPath| [<search-path>]                                 *:JsonPath*
     If <search-path> is provided: |jsonpath-goto|
         Scans the active buffer for the definition for the given path,
         placing the cursor on it if found.
     If omitted: |jsonpath-echo|
         Outputs the path to the identifier under the cursor using |:echo|.
         Also copies the path to a register if |g:jsonpath_register| is set.
+    If a range is given, only those lines of the file will be scanned.
 
 
 ==============================================================================
