@@ -30,8 +30,10 @@ def scan_stream(stream, path=[], line=-1, column=-1, from_line=1, verbose=False)
     stream.skip_to_line(from_line)
 
     # Parser state
-    in_key = False
     quoted = False
+    # Assume the first quoted string we'll encounter is a key
+    # This ensures that root keys are included even if the opening brace ({) is missed
+    in_key = True
     key = "" # using a string array seems to perform worse
     stack = [] # contains path components (strings), indices (ints), and -1 for unvisited objects
     stack_strings = [] # stringified path components for quick equality checking with `path`
@@ -55,7 +57,7 @@ def scan_stream(stream, path=[], line=-1, column=-1, from_line=1, verbose=False)
 
         if char == "\\":
             decoded = read_escape(stream)
-            if in_key:
+            if quoted and in_key:
                 key += decoded
 
         elif quoted and in_key and char != '"':
@@ -87,12 +89,12 @@ def scan_stream(stream, path=[], line=-1, column=-1, from_line=1, verbose=False)
             stack_strings.append("0")
             stack_modified = 1
             in_key = False
-            
+
         elif char == "]" or char == "}":
             stack.pop()
             stack_strings.pop()
             stack_modified = -1
-        
+
         elif char == ",":
             # If currently within array
             if isinstance(stack[-1], int) and stack[-1] >= 0:
@@ -101,7 +103,7 @@ def scan_stream(stream, path=[], line=-1, column=-1, from_line=1, verbose=False)
                 stack_modified = 1
             else:
                 in_key = True
-        
+
         if stack_modified != 0:
             if verbose:
                 print("%d:%d %c %c %s" % (
