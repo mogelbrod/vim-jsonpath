@@ -8,7 +8,7 @@ import re
 if (sys.version_info < (3, 0)):
     from codecs import open
 
-def scan_stream(stream, path=[], line=-1, column=-1, verbose=False):
+def scan_stream(stream, path=[], line=-1, column=-1, from_line=1, verbose=False):
     """
     Scans the given stream (CountingStream instance) for a given path, or
     line/column offset.
@@ -23,6 +23,11 @@ def scan_stream(stream, path=[], line=-1, column=-1, verbose=False):
 
     if not searching and (line < 0 or column < 0):
         raise ValueError("Must provide a non-empty 'path' or 'line' and 'column' >=0")
+
+    if line > 0 and from_line > line:
+        raise ValueError("Target line must be larger than starting line (from_line)")
+
+    stream.skip_to_line(from_line)
 
     # Parser state
     in_key = False
@@ -62,8 +67,13 @@ def scan_stream(stream, path=[], line=-1, column=-1, verbose=False):
             quoted = not quoted
 
         elif char == ":":
-            stack[-1] = key
-            stack_strings[-1] = key
+            # Assume new object if encountering key outside root
+            if stack:
+                stack[-1] = key
+                stack_strings[-1] = key
+            else:
+                stack.append(key)
+                stack_strings.append(key)
             stack_modified = 1
             in_key = False
 
@@ -169,6 +179,14 @@ class CountingStream:
                 break
         return char
 
+    def skip_to_line(self, line):
+        if line < self.lnum:
+            raise ValueError("Unable to skip to earlier line (%d > %d)" % (line, self.lnum))
+        while self.lnum < line:
+            char = self.read()
+            if char == "":
+                break
+
 
 class CountingLines(CountingStream):
     """
@@ -187,6 +205,9 @@ class CountingLines(CountingStream):
             return "\n"
         return line[self.cnum - 1]
 
+    def skip_to_line(self, line):
+        self.lnum = min(line, self.line_count)
+        self.cnum = 1
 
 class CountingFile(CountingStream):
     """
@@ -213,12 +234,12 @@ def main(args):
         parts = re.split("[,.:/-]", args.target)
         line = int(parts[0])
         column = 1 if len(parts) == 1 else int(parts[1])
-        res = scan_stream(stream, line=line, column=column, verbose=args.verbose)
+        res = scan_stream(stream, line=line, column=column, from_line=args.from_line, verbose=args.verbose)
         if res:
             output = args.delimeter.join(str(x) for x in res)
     else:
         path = args.target.split(args.delimeter)
-        res = scan_stream(stream, path=path, verbose=args.verbose)
+        res = scan_stream(stream, path=path, from_line=args.from_line, verbose=args.verbose)
         if res:
             output = ":".join(str(x) for x in res)
     if output:
@@ -240,9 +261,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "-l",
         "--line-mode",
-        action="store_true",
         dest="line",
+        action="store_true",
         help="output path for the given line[:offset] instead of searching for path")
+
+    parser.add_argument(
+        "--from",
+        dest="from_line",
+        type=int,
+        default=1,
+        help="ignore lines up to (but not including)")
 
     parser.add_argument(
         "-d",

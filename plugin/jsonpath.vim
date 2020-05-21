@@ -14,7 +14,7 @@ if !exists('g:jsonpath_use_python')
   let g:jsonpath_use_python = has('python3')
 endif
 
-command! -nargs=? JsonPath call jsonpath#command(<q-args>)
+command! -nargs=? -range=% JsonPath <line1>,<line2>call jsonpath#command(<q-args>)
 
 " au FileType json noremap <buffer> <silent> <expr> <leader>g jsonpath#goto()
 " au FileType json noremap <buffer> <silent> <expr> <leader>p jsonpath#echo()

@@ -36,9 +36,23 @@ function s:is_equal_lists(a, b) "{{{
   return 1
 endfunction "}}}
 
+function! s:range_obj(range) "{{{
+  let default = {
+        \ 'from_line': 1,
+        \ 'from_column': 1,
+        \ 'to_line': line('$'),
+        \ 'to_column': strchars(getline('$')),
+        \ }
+  if empty(a:range)
+    return default
+  endif
+  return extend(a:range, default)
+endfunction "}}}
+
 " Parses the current VIM buffer up until a certain offset/end of file
 " while keeping track of the current JSON path (using the `stack` list).
 " Can optionally look for the path `search_for` on the way, stopping when found.
+" Arguments: (search_for, [to_line=$], [to_column=$], [from_line=1])
 function! jsonpath#scan_buffer(search_for, ...) "{{{
   " Parse arguments
   let search_for = a:search_for
@@ -47,7 +61,8 @@ function! jsonpath#scan_buffer(search_for, ...) "{{{
   endif
   let is_searching = !empty(search_for)
 
-  let to_column = max([0, get(a:, 2)])
+  let from_line = get(a:, 3, 1)
+  let to_column = get(a:, 2, 1)
 
   let to_line = get(a:, 1)
   if to_line < 1 || to_line > line('$')
@@ -57,16 +72,16 @@ function! jsonpath#scan_buffer(search_for, ...) "{{{
 
   if g:jsonpath_use_python
     if has('python3')
-      return jsonpath#scan_buffer_python(search_for, to_line, to_column)
+      return jsonpath#scan_buffer_python(search_for, to_line, to_column, from_line)
     endif
 
     echom 'g:jsonpath_use_python set but python not found, falling back to vimscript'
   endif
 
-  return jsonpath#scan_buffer_vimscript(search_for, to_line, to_column)
+  return jsonpath#scan_buffer_vimscript(search_for, to_line, to_column, from_line)
 endfunction "}}}
 
-function! jsonpath#scan_buffer_vimscript(search_for, to_line, to_column) "{{{
+function! jsonpath#scan_buffer_vimscript(search_for, to_line, to_column, from_line) "{{{
   let is_searching = !empty(a:search_for)
 
   " Parser state
@@ -79,7 +94,7 @@ function! jsonpath#scan_buffer_vimscript(search_for, to_line, to_column) "{{{
   let actions = []
 
   try
-    let lnr = 1
+    let lnr = a:from_line
     while lnr <= a:to_line "{{{
       let line = getline(lnr)
       let line_length = len(line)
@@ -202,7 +217,7 @@ function! jsonpath#scan_buffer_vimscript(search_for, to_line, to_column) "{{{
   return []
 endfunction "}}}
 
-function! jsonpath#scan_buffer_python(search_for, to_line, to_column) "{{{
+function! jsonpath#scan_buffer_python(search_for, to_line, to_column, from_line) "{{{
 py3 << EOF
 import sys
 import vim
@@ -215,6 +230,7 @@ result = jsonpath.scan_stream(
   path=vim.eval('a:search_for'),
   line=int(vim.eval('a:to_line')),
   column=int(vim.eval('a:to_column')),
+  from_line=int(vim.eval('a:from_line')),
 )
 EOF
 
@@ -229,6 +245,7 @@ EOF
 endfunction "}}}
 
 " Attempts to place the cursor on identifier for the given path
+" Arguments: ([search_for=input], [to_line=$], [to_column=$], [from_line=1])
 function! jsonpath#goto(...) "{{{
   let search_for = get(a:, 1)
   if empty(search_for)
@@ -239,7 +256,7 @@ function! jsonpath#goto(...) "{{{
     endif
   endif
 
-  let pos = jsonpath#scan_buffer(search_for)
+  let pos = jsonpath#scan_buffer(search_for, get(a:, 2), get(a:, 3), get(a:, 4))
 
   if empty(pos)
     echo 'Path not found: ' . search_for
@@ -250,9 +267,10 @@ function! jsonpath#goto(...) "{{{
 endfunction "}}}
 
 " Echoes the path of the identifier under the cursor
+" Arguments: ([from_line=1])
 function! jsonpath#echo() "{{{
   echo 'Parsing buffer...' | redraw
-  let path = jsonpath#scan_buffer([], line('.'), col('.'))
+  let path = jsonpath#scan_buffer([], line('.'), col('.'), get(a:, 1, 1))
   let joined = join(path, g:jsonpath_delimeter)
   if len(path)
     if exists('g:jsonpath_register')
@@ -265,11 +283,11 @@ function! jsonpath#echo() "{{{
 endfunction "}}}
 
 " Entry point for the :JsonPath command
-function! jsonpath#command(input) "{{{
+function! jsonpath#command(input) range "{{{
   if empty(a:input)
-    call jsonpath#echo()
+    call jsonpath#echo(a:firstline)
   else
-    call jsonpath#goto(a:input)
+    call jsonpath#goto(a:input, a:lastline, 0, a:firstline)
   endif
 endfunction "}}}
 
