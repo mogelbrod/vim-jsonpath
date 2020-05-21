@@ -45,13 +45,13 @@ def scan_stream(stream, path=[], line=-1, column=-1, from_line=1, verbose=False)
             break
 
         if verbose:
-            print("%d:%d %c  quoted=%s in_key=%s key=%s",
+            print("%d:%d %c  quoted=%s in_key=%s key=%s" % (
                 stream.lnum,
                 stream.cnum,
                 char,
                 quoted,
                 in_key,
-                key)
+                key))
 
         if char == "\\":
             decoded = read_escape(stream)
