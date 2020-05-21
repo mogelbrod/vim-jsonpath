@@ -87,9 +87,9 @@ function! jsonpath#scan_buffer_vimscript(search_for, to_line, to_column, from_li
   " Parser state
   let stack = []
   let finished = 0
-  let parsing_key = 0
-  let key = 0
   let quoted = 0
+  let in_key = 1
+  let key = 0
   let escaped = 0
   let actions = []
 
@@ -106,37 +106,40 @@ function! jsonpath#scan_buffer_vimscript(search_for, to_line, to_column, from_li
 
         if escaped
           let escaped = 0
-          if parsing_key
+          if quoted && in_key
             let key .= s:escapes[char]
           endif
 
         elseif char ==# '\'
           let escaped = 1
 
-        elseif quoted && char !=# '"'
-          if parsing_key
-            let key .= char
-          endif
+        elseif quoted && in_key && char !=# '"'
+          let key .= char
 
         elseif char ==# '"'
-          if parsing_key && !quoted
+          if in_key && !quoted
             let key = ''
           endif
           let quoted = quoted ? 0 : 1
 
         elseif char ==# ':'
-          let stack[-1] = key
+          " Assume new object if encountering key outside root
+          if empty(stack)
+            call add(stack, key)
+          else
+            let stack[-1] = key
+          endif
           let stack_modified = 1
-          let parsing_key = 0
+          let in_key = 0
 
         elseif char ==# '{'
           call add(stack, -1)
-          let parsing_key = 1
+          let in_key = 1
 
         elseif char ==# '['
           call add(stack, 0)
           let stack_modified = 1
-          let parsing_key = 0
+          let in_key = 0
 
         elseif char ==# '}' || char ==# ']'
           call remove(stack, -1)
@@ -147,7 +150,7 @@ function! jsonpath#scan_buffer_vimscript(search_for, to_line, to_column, from_li
             let stack[-1] = stack[-1] + 1
             let stack_modified = 1
           else
-            let parsing_key = 1
+            let in_key = 1
           endif
 
         endif " end of character handling
@@ -167,7 +170,7 @@ function! jsonpath#scan_buffer_vimscript(search_for, to_line, to_column, from_li
         endif
 
         " Abort if end position has been reached
-        if !parsing_key && lnr >= a:to_line && cnr + 1 >= a:to_column
+        if !in_key && lnr >= a:to_line && cnr + 1 >= a:to_column
           let finished = !is_searching " search failed if we reached end
           break
         endif
