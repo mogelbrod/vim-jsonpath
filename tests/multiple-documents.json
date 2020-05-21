@@ -1,0 +1,13 @@
+{
+  "first": {
+    "second": {
+      "value": true
+    }
+  }
+}
+---
+{
+  "second": {
+    "document": true
+  }
+}

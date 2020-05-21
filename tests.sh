@@ -8,7 +8,7 @@ t() {
   expected="${@:$#}"
   args="${@:1:($#-1)}"
   echo -e "\n./jsonpath.py $args"
-  output=$(./jsonpath.py $args)
+  output=$(./jsonpath.py $args 2>&1)
   # output=$(time -p ./jsonpath.py $args)
   if [ "$output" = "$expected" ]; then
     echo -e "${GREEN}- pass${NC}"
@@ -43,3 +43,14 @@ t tests/array.json "3.numbers.0" "6:5"
 t tests/restcountries.json "219.capital" "17806:13"
 t tests/restcountries.json "85.latlng.0" "6963:4"
 t tests/unicode.json "👍" "1:35"
+
+# Testing --from flag
+t tests/multiple-documents.json --from=1 -l 5 "first.second.value"
+t tests/multiple-documents.json --from=1 "first.second.value" "4:16"
+t tests/multiple-documents.json --from=9 -l 11 "second.document"
+t tests/multiple-documents.json --from=10 -l 11 "second.document"
+t tests/multiple-documents.json --from=9 "second.document" "11:17"
+
+t tests/multiple-documents.json --from=1 "not.found" "'not.found' not found"
+t tests/multiple-documents.json --from=9 "not.found" "'not.found' not found"
+
