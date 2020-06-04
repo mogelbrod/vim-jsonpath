@@ -60,13 +60,16 @@ def scan_stream(stream, path=[], line=-1, column=-1, from_line=1, verbose=False)
             if quoted and in_key:
                 key += decoded
 
-        elif quoted and in_key and char != '"':
-            key += char
+        elif quoted:
+            if char == '"':
+                quoted = False
+            elif in_key:
+                key += char
 
         elif char == '"':
-            if in_key and not quoted:
+            quoted = True
+            if in_key:
                 key = ""
-            quoted = not quoted
 
         elif char == ":":
             # Assume new object if encountering key outside root

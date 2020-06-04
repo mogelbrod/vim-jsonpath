@@ -1,0 +1,7 @@
+{
+  "string": "hello",
+  "templateString": "foo-{{timestamp}}",
+  "anotherString": "world",
+  "json": "{\"key\": \"value\", \"nested\": {\"object\": true}}",
+  "last": "string"
+}

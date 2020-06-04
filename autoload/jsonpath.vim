@@ -113,14 +113,18 @@ function! jsonpath#scan_buffer_vimscript(search_for, to_line, to_column, from_li
         elseif char ==# '\'
           let escaped = 1
 
-        elseif quoted && in_key && char !=# '"'
-          let key .= char
+        elseif quoted
+          if char ==# '"'
+            let quoted = 0
+          elseif in_key
+            let key .= char
+          endif
 
         elseif char ==# '"'
-          if in_key && !quoted
+          let quoted = 1
+          if in_key
             let key = ''
           endif
-          let quoted = quoted ? 0 : 1
 
         elseif char ==# ':'
           " Assume new object if encountering key outside root

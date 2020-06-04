@@ -31,6 +31,10 @@ t tests/restcountries.json -l 17806:18 "219.capital"
 t tests/restcountries.json -l 6963:8 "85.latlng.0"
 t tests/unicode.json -l 1:27 "emoji"
 t tests/unicode.json -l 1:38 "👍"
+t tests/json-in-string.json -l 3:22 "templateString"
+t tests/json-in-string.json -l 3:29 "templateString"
+t tests/json-in-string.json -l 5:48 "json"
+t tests/json-in-string.json -l 6:12 "last"
 
 # Find offset for path
 t tests/object.json "first" "2:12"
