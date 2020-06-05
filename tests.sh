@@ -51,10 +51,11 @@ t tests/unicode.json "👍" "1:35"
 # Testing --from flag
 t tests/multiple-documents.json --from=1 -l 5 "first.second.value"
 t tests/multiple-documents.json --from=1 "first.second.value" "4:16"
-t tests/multiple-documents.json --from=9 -l 11 "second.document"
-t tests/multiple-documents.json --from=10 -l 11 "second.document"
-t tests/multiple-documents.json --from=9 "second.document" "11:17"
-
+t tests/multiple-documents.json --from=9 -l 10 "first"
+t tests/multiple-documents.json --from=9 -l 12 "second.document"
+t tests/multiple-documents.json --from=10 -l 13 "second.document"
+t tests/multiple-documents.json --from=9 "second.document" "12:17"
+t tests/multiple-documents.json "first" "2:12"
+t tests/multiple-documents.json --from=9 "first" "10:12"
 t tests/multiple-documents.json --from=1 "not.found" "'not.found' not found"
 t tests/multiple-documents.json --from=9 "not.found" "'not.found' not found"
-
