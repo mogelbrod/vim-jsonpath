@@ -275,7 +275,7 @@ endfunction "}}}
 
 " Echoes the path of the identifier under the cursor
 " Arguments: ([from_line=1])
-function! jsonpath#echo() "{{{
+function! jsonpath#echo(...) "{{{
   echo 'Parsing buffer...' | redraw
   let path = jsonpath#scan_buffer([], line('.'), col('.'), get(a:, 1, 1))
   let joined = join(path, g:jsonpath_delimeter)
