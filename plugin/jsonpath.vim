@@ -20,7 +20,7 @@ command! -nargs=? -range=% JsonPath
       \ let b:jsonpath_view = winsaveview() |
       \ <line1>,<line2>call jsonpath#command(<q-args>)
 
-" au FileType json noremap <buffer> <silent> <expr> <leader>g jsonpath#goto()
-" au FileType json noremap <buffer> <silent> <expr> <leader>p jsonpath#echo()
+" au FileType json noremap <buffer> <silent> <leader>d :call jsonpath#echo()<CR>
+" au FileType json noremap <buffer> <silent> <leader>g :call jsonpath#goto()<CR>
 
 " vim:set et sw=2:
