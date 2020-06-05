@@ -291,6 +291,13 @@ endfunction "}}}
 
 " Entry point for the :JsonPath command
 function! jsonpath#command(input) range "{{{
+  " Restore cursor position saved by the :JsonPath command so that line('.')
+  " and col('.') returns the correct values
+  if exists('b:jsonpath_view')
+    call winrestview(b:jsonpath_view)
+    unlet b:jsonpath_view
+  endif
+
   if empty(a:input)
     call jsonpath#echo(a:firstline)
   else
