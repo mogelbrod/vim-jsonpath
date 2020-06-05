@@ -18,8 +18,8 @@ Plug 'mogelbrod/vim-jsonpath'
 let g:jsonpath_register = '*'
 
 " Define mappings for json buffers
-au FileType json noremap <buffer> <silent> <expr> <leader>p jsonpath#echo()
-au FileType json noremap <buffer> <silent> <expr> <leader>g jsonpath#goto()
+au FileType json noremap <buffer> <silent> <leader>d :call jsonpath#echo()<CR>
+au FileType json noremap <buffer> <silent> <leader>g :call jsonpath#goto()<CR>
 ```
 
 ### Python support in vim
@@ -38,14 +38,14 @@ Mappings are not provided by default but can easily be added to your `.vimrc`.
 
 * If you only want mappings when working with `.json` files:
   ```vim
-  au FileType json noremap <buffer> <silent> <expr> <leader>p jsonpath#echo()
-  au FileType json noremap <buffer> <silent> <expr> <leader>g jsonpath#goto()
+  au FileType json noremap <buffer> <silent> <leader>d :call jsonpath#echo()<CR>
+  au FileType json noremap <buffer> <silent> <leader>g :call jsonpath#goto()<CR>
   ```
 
-* If you want global mappings:
+* If you prefer global mappings:
   ```vim
-  noremap <silent> <expr> <leader>p jsonpath#echo()
-  noremap <silent> <expr> <leader>g jsonpath#goto()
+  noremap <buffer> <silent> <leader>d :call jsonpath#echo()<CR>
+  noremap <buffer> <silent> <leader>g :call jsonpath#goto()<CR>
   ```
 
 ## Configuration
