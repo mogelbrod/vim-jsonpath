@@ -64,7 +64,7 @@ function! jsonpath#scan_buffer(search_for, ...) "{{{
   let from_line = get(a:, 3, 1)
   let to_column = get(a:, 2, 1)
 
-  let to_line = get(a:, 1)
+  let to_line = get(a:, 1, 0)
   if to_line < 1 || to_line > line('$')
     let to_line = line('$')
     let to_column = strchars(getline('$'))
