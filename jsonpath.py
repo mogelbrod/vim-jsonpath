@@ -99,8 +99,10 @@ def scan_stream(stream, path=[], line=-1, column=-1, from_line=1, verbose=False)
             stack_modified = -1
 
         elif char == ",":
-            # If currently within array
-            if isinstance(stack[-1], int) and stack[-1] >= 0:
+            if not stack:
+                pass
+            elif isinstance(stack[-1], int) and stack[-1] >= 0:
+                # If currently within array
                 stack[-1] = stack[-1] + 1
                 stack_strings[-1] = str(stack[-1])
                 stack_modified = 1
