@@ -153,7 +153,7 @@ def read_escape(stream):
     for _ in range(0, 4):
         r |= int(stream.read(), 16) << sv
         sv -= 4
-    return unichr(r)
+    return chr(r)
 
 
 class CountingStream:
