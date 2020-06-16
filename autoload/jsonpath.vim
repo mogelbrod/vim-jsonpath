@@ -61,7 +61,7 @@ function! jsonpath#scan_buffer(search_for, ...) "{{{
   endif
   let is_searching = !empty(search_for)
 
-  let from_line = get(a:, 3, 1)
+  let from_line = max([1, get(a:, 3, 1)])
   let to_column = get(a:, 2, 1)
 
   let to_line = get(a:, 1, 0)
