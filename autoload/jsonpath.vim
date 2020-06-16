@@ -257,6 +257,7 @@ function! jsonpath#goto(...) "{{{
   let search_for = get(a:, 1)
   if empty(search_for)
     let search_for = input('Path (using dot notation): ')
+    redraw
     if empty(search_for)
       echo 'Search aborted'
       return
